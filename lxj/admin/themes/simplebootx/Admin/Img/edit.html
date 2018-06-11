@@ -147,15 +147,12 @@
                 url: '<?php echo U("img/delete_attach")?>',
                 data: 'allids='+allids+'&undeleids='+undeleids,
                 success: function (data) {
-                    alert(11212);
-                    console.log(data);
-                    // if(data){
-                    //     $(".aids").val(undeleids);
-                    //     $('#err').html(data.msg);
-                    //     // console.log(data['info']);
-                    // }else{
-                    //     alert('操作失败!');
-                    // }
+                    if(data){
+                        $(".aids").val(undeleids);
+                        console.log(data);
+                    }else{
+                        alert('操作失败!');
+                    }
                 },
                 dataType: 'json',
             });
