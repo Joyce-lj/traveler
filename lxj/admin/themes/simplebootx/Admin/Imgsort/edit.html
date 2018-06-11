@@ -1,0 +1,109 @@
+<admintpl file="header" />
+<link rel="stylesheet" href="__ROOT__/easyupload/easy-upload.css">
+</head>
+<body>
+	<div class="wrap">
+		<ul class="nav nav-tabs">
+			<li><a href="{:U('imgsort/index')}">分类列表</a></li>
+			<li><a href="{:U('imgsort/add')}">添加分类</a></li>
+			<li class="active"><a>编辑分类</a></li>
+		</ul>
+		<form method="post" class="form-horizontal js-ajax-form" action="{:U('imgsort/edit_post')}">
+			<fieldset>
+				<input type="hidden" id="id" name='id' value="{$imgsort.id}">
+				<div class="control-group">
+					<label class="control-label">分类名称:</label>
+					<div class="controls">
+						<input type="text" name="name" value="{$imgsort.name}">
+						<span class="form-required">*</span>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">显示:</label>
+					<div class="controls">
+						<div style="margin-top: 4px;">
+							<if condition="$imgsort['state'] == 1">
+								是 <input type="radio" name="state" value="1" checked>
+								否 <input type="radio" name="state" value="0">
+							</if>
+							<if condition="$imgsort['state'] == 0">
+								是 <input type="radio" name="state" value="1" >
+								否 <input type="radio" name="state" value="0" checked>
+							</if>
+						</div>
+					</div>
+				</div>
+
+			</fieldset>
+			<div class="form-actions">
+				<!--<input type="hidden" name="id" value="{$data.id}" />-->
+				<button type="submit" class="btn btn-primary js-ajax-submit" onclick=" return CheckPost()">{:L('SAVE')}</button>
+				<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+				<!-- <button class="btn js-ajax-close-btn" type="submit">{:L('CLOSE')}</button> -->
+			</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script src="__PUBLIC__/js/jquery-1.10.2.js"></script>
+	<!-- 视实际需要决定是否引入jquery.cookie-1.4.1.min.js-->
+	<script src="__ROOT__/easyupload/vendor/jquery.cookie-1.4.1.min.js"></script>
+	<script src="__ROOT__/easyupload/easyUpload.js"></script>
+
+	<script>
+		$(function() {
+			$(".js-ajax-close-btn").on('click', function(e) {
+				e.preventDefault();
+				Wind.use("artDialog", function() {
+					art.dialog({
+						id : "question",
+						icon : "question",
+						fixed : true,
+						lock : true,
+						background : "#CCCCCC",
+						opacity : 0,
+						content : "您确定需要关闭当前页面嘛？",
+						ok : function() {
+							setCookie('refersh_time_admin_menu_index', 1);
+							window.close();
+							return true;
+						}
+					});
+				});
+			});
+		});
+	</script>
+</body>
+</html>
+
+
+<script>
+    function CheckPost() {
+        var name = $("input[name='name']").val();
+        if(name == '' || name == null){
+            alert('请填写分类名称!');
+            return false;
+		}else{
+            return true;
+		}
+
+    }
+
+    // function del(id,savename,filepath) {
+    //     $("#att_"+id).remove();
+    //     $.ajax({
+    //         type: 'GET',
+    //         url: '<?php echo U("news/edit_del")?>',
+    //         data: 'id='+id+'&savename='+savename+'&filepath='+filepath,
+    //         success: function (data) {
+    //             if(data){
+    //                 //remove
+    //                 console.log(data);
+    //             }else{
+    //                 alert('操作失败!');
+    //             }
+    //         },
+    //         dataType: 'json',
+    //     });
+    //
+    // }
+</script>

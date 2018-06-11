@@ -1,0 +1,156 @@
+<admintpl file="header" />
+<link rel="stylesheet" href="__ROOT__/easyupload/easy-upload.css">
+</head>
+
+<body>
+
+<!--<form>-->
+	<!--<div id="queue"></div>-->
+	<!--<input id="file_upload" name="file_upload" type="file" multiple="true">-->
+<!--</form>-->
+
+
+
+	<div class="wrap">
+		<!--<ul class="nav nav-tabs">-->
+			<!--<li><a href="{:U('menu/index')}">{:L('ADMIN_MENU_INDEX')}</a></li>-->
+			<!--<li class="active"><a href="{:U('menu/add')}">{:L('ADMIN_MENU_ADD')}</a></li>-->
+		<!--</ul>-->
+		<ul class="nav nav-tabs">
+			<li><a href="{:U('news/index')}">文件展示</a></li>
+			<li class="active"><a href="{:U('news/add')}">文件上传</a></li>
+		</ul>
+		<form method="post" class="form-horizontal js-ajax-form" action="{:U('news/add_post')}">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label">名称:</label>
+					<div class="controls">
+						<input type="text" name="title" required value="">
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">文件:</label>
+					<div class="controls">
+						<input type="text" name="aids" class="aids" value="" required style="display: none">
+						<div id="easyContainer">
+						</div>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<!--<button>添加</button>-->
+				<button type="submit" class="btn btn-primary js-ajax-submit" onclick=" return CheckPost()">{:L('ADD')}</button>
+				<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+			</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<!--<script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>-->
+</body>
+</html>
+
+
+
+<script src="__PUBLIC__/js/jquery-1.10.2.js"></script>
+<!-- 视实际需要决定是否引入jquery.cookie-1.4.1.min.js-->
+<script src="__ROOT__/easyupload/vendor/jquery.cookie-1.4.1.min.js"></script>
+<script src="__ROOT__/easyupload/easyUpload.js"></script>
+<script>
+    $('#easyContainer').easyUpload({
+        allowFileTypes: '*.jpg;*.JPG;*.doc;*.DOC;*.docx;*.DOCX;*.pdf;*.PDF;*.txt;*.TXT;*.zip;*.ZIP;*.tif;*.TIF;',//允许上传文件类型，格式';*.doc;*.pdf'
+        allowFileSize: 100000,//允许上传文件大小(KB)
+        selectText: '选择文件',//选择文件按钮文案
+        multi: true,//是否允许多文件上传
+        multiNum: 5,//多文件上传时允许的文件数
+        showNote: true,//是否展示文件上传说明
+        note: '提示：最多上传5个文件，支持格式为doc、pdf、jpg',//文件上传说明
+        showPreview: true,//是否显示文件预览
+        url: '{:U("news/upload")}',//上传文件地址
+        fileName: 'file',//文件filename配置参数
+        formParam: {
+           // token: $.cookie('token_cookie')//不需要验证token时可以去掉
+        },//文件filename以外的配置参数，格式：{key1:value1,key2:value2}
+        timeout: 30000,//请求超时时间
+        okCode: 200,//与后端返回数据code值一致时执行成功回调，不配置默认200
+        successFunc: function(res) {
+            arr = new Array();
+			len = (res.success).length;
+			for(i=0;i<len;i++){
+			    arr.push(res.success[i]['aid']);
+			}
+			ids= arr.join(',');
+            $(".aids").val(ids);
+
+            //如果文件名没有填写,则默认显示第一个上传文件的文件名
+			var name = $("input[name='title']").val();
+			if(name == ''){
+                var dataindex = $("li[data-index='0']").find('.easy_upload_filename').text();
+                var extindex = dataindex.lastIndexOf(".");
+                var ext = dataindex.substr(extindex);
+                var name = dataindex.replace(ext,'');
+                $("input[name='title']").val(name);
+			}
+
+			console.log('成功回调',res);
+        },//上传成功回调函数
+        errorFunc: function(res) {
+            console.log('失败回调', res);
+        },//上传失败回调函数
+        deleteFunc: function(res) {
+           allids=  $(".aids").val();
+           ids = new Array();
+           len = (res.success).length;
+            for(i=0;i<len;i++){
+                ids.push(res.success[i]['aid']);
+            }
+            undeleids= ids.join(',');
+
+           //  console.log('删除回调', res);
+            $.ajax({
+                type: 'GET',
+                url: '<?php echo U("news/delete_attach")?>',
+                data: 'allids='+allids+'&undeleids='+undeleids,
+                success: function (data) {
+                    if(data.code == 0){
+                        $(".aids").val(undeleids);
+                        console.log(data);
+                    }else{
+                        alert('操作失败!');
+                    }
+                },
+                dataType: 'json',
+            });
+
+        }//删除文件回调函数
+    });
+</script>
+<script>
+	function CheckPost() {
+
+		var title = $("input[name='title']").val();
+		var aids = $(".aids").val();
+		if(title == '' || title == null){
+			alert('请填写文件名!');
+			return false;
+		}else if(aids == '' || aids == null){
+            alert('请上传附件!');
+            return false;
+        }else{
+            return true;
+		}
+
+    }
+
+
+    // $("#easyContainer").click(function () {
+    //     var dataindex = $("li[data-index='0']").find('.easy_upload_filename').text();
+    //     var extindex = dataindex.lastIndexOf(".");
+    //     var ext = dataindex.substr(extindex);
+    //     var name = dataindex.replace(ext,'');
+    //     // var dataindex = $(".easy_upload_queue li:first").children();
+    //     alert(name);
+    // })
+
+
+
+</script>

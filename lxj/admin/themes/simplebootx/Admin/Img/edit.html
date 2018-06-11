@@ -1,0 +1,208 @@
+<admintpl file="header" />
+<link rel="stylesheet" href="__ROOT__/easyupload/easy-upload.css">
+</head>
+<body>
+	<div class="wrap">
+		<ul class="nav nav-tabs">
+			<li><a href="{:U('img/index')}">图片展示</a></li>
+			<li><a href="{:U('img/add')}">图片上传</a></li>
+			<li class="active"><a>编辑文件</a></li>
+		</ul>
+		<form method="post" class="form-horizontal js-ajax-form" action="{:U('img/edit_post')}">
+			<fieldset>
+				<input type="hidden" id="nid" name='nid' value="{$news.nid}">
+				<div class="control-group">
+					<label class="control-label">文件名称:</label>
+					<div class="controls">
+						<input type="text" name="title" value="{$news.title}">
+						<span class="form-required">*</span>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">附件:</label>
+					<div class="controls">
+
+						<foreach name="attaches" item="val">
+							<p id="att_{$val.id}">
+								<i class="fa fa-file"></i>
+								<span class="attach">{$val.img_name}</span>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<php>
+									$savename = "'".$val['save_name']."'";
+									$filepath = "'".$val['img_path']."'";
+								</php>
+								<a href="javascript:void (0)" onclick="del({$val['id']},{$savename},{$filepath})">删除</a><hr>
+							</p>
+							<p id="delerr" style="color: red;"></p>
+						</foreach>
+
+						<!--<input type="text" name="app" value="{$data.app}">-->
+						<!--<span class="form-required">*</span>-->
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label">重新上传:</label>
+					<div class="controls">
+						<input type="text" name="aids" class="aids" value="" required style="display: none">
+						<div id="easyContainer">
+						</div>
+					</div>
+				</div>
+
+			</fieldset>
+			<div class="form-actions">
+				<!--<input type="hidden" name="id" value="{$data.id}" />-->
+				<button type="submit" class="btn btn-primary js-ajax-submit" onclick=" return CheckPost()">{:L('SAVE')}</button>
+				<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+				<!-- <button class="btn js-ajax-close-btn" type="submit">{:L('CLOSE')}</button> -->
+			</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script src="__PUBLIC__/js/jquery-1.10.2.js"></script>
+	<!-- 视实际需要决定是否引入jquery.cookie-1.4.1.min.js-->
+	<script src="__ROOT__/easyupload/vendor/jquery.cookie-1.4.1.min.js"></script>
+	<script src="__ROOT__/easyupload/easyUpload.js"></script>
+
+	<script>
+		$(function() {
+			$(".js-ajax-close-btn").on('click', function(e) {
+				e.preventDefault();
+				Wind.use("artDialog", function() {
+					art.dialog({
+						id : "question",
+						icon : "question",
+						fixed : true,
+						lock : true,
+						background : "#CCCCCC",
+						opacity : 0,
+						content : "您确定需要关闭当前页面嘛？",
+						ok : function() {
+							setCookie('refersh_time_admin_menu_index', 1);
+							window.close();
+							return true;
+						}
+					});
+				});
+			});
+		});
+	</script>
+</body>
+</html>
+
+<script>
+    $('#easyContainer').easyUpload({
+        allowFileTypes: '*.jpg;*.JPG;*.doc;*.DOC;*.docx;*.DOCX;*.pdf;*.PDF;*.txt;*.TXT;*.zip;*.ZIP;*.tif;*.TIF;*.BMP;*.bmp;',//允许上传文件类型，格式';*.doc;*.pdf'
+        allowFileSize: 100000,//允许上传文件大小(KB)
+        selectText: '选择文件',//选择文件按钮文案
+        multi: true,//是否允许多文件上传
+        multiNum: 5,//多文件上传时允许的文件数
+        showNote: true,//是否展示文件上传说明
+        note: '提示：最多上传5个文件，支持格式为doc、pdf、jpg',//文件上传说明
+        showPreview: true,//是否显示文件预览
+        url: '{:U("img/upload")}',//上传文件地址
+        fileName: 'file',//文件filename配置参数
+        formParam: {
+            // token: $.cookie('token_cookie')//不需要验证token时可以去掉
+        },//文件filename以外的配置参数，格式：{key1:value1,key2:value2}
+        timeout: 30000,//请求超时时间
+        okCode: 200,//与后端返回数据code值一致时执行成功回调，不配置默认200
+        successFunc: function(res) {
+            arr = new Array();
+            len = (res.success).length;
+            for(i=0;i<len;i++){
+                arr.push(res.success[i]['aid']);
+            }
+            ids= arr.join(',');
+            $(".aids").val(ids);
+
+            //如果文件名没有填写,则默认显示第一个上传文件的文件名
+            var name = $("input[name='title']").val();
+            if(name == ''){
+                var dataindex = $("li[data-index='0']").find('.easy_upload_filename').text();
+                var extindex = dataindex.lastIndexOf(".");
+                var ext = dataindex.substr(extindex);
+                var name = dataindex.replace(ext,'');
+                $("input[name='title']").val(name);
+            }
+
+            console.log('成功回调',res);
+        },//上传成功回调函数
+        errorFunc: function(res) {
+            console.log('失败回调', res);
+        },//上传失败回调函数
+        deleteFunc: function(res) {
+            allids=  $(".aids").val();
+            ids = new Array();
+            len = (res.success).length;
+            for(i=0;i<len;i++){
+                ids.push(res.success[i]['aid']);
+            }
+            undeleids= ids.join(',');
+
+            //  console.log('删除回调', res);
+            $.ajax({
+                type: 'GET',
+                url: '<?php echo U("img/delete_attach")?>',
+                data: 'allids='+allids+'&undeleids='+undeleids,
+                success: function (data) {
+                    alert(11212);
+                    console.log(data);
+                    // if(data){
+                    //     $(".aids").val(undeleids);
+                    //     $('#err').html(data.msg);
+                    //     // console.log(data['info']);
+                    // }else{
+                    //     alert('操作失败!');
+                    // }
+                },
+                dataType: 'json',
+            });
+
+        }//删除文件回调函数
+    });
+</script>
+<script>
+    function CheckPost() {
+        var title = $("input[name='title']").val();
+        var attach = $(".attach").text();
+        var aids = $(".aids").val();
+        if(title == '' || title == null){
+            alert('请填写文件名!');
+            return false;
+        }else if(attach == '' || attach == null){
+            if(aids == '' || aids == null){
+                alert('请上传附件!');
+                return false;
+            }else{
+                return true;
+            }
+		}else{
+            return true;
+		}
+
+    }
+
+    function del(id,savename,filepath) {
+
+        $.ajax({
+            type: 'GET',
+            url: '<?php echo U("img/edit_del")?>',
+            data: 'id='+id+'&savename='+savename+'&filepath='+filepath,
+            success: function (data) {
+                if(data){
+                    //remove
+                    if(data.code == 0){
+                        $("#att_"+id).remove();
+                        $("#delerr").html('');
+					}else{
+                        $("#delerr").html(data.msg);
+					}
+                }
+            },
+            dataType: 'json',
+        });
+
+    }
+</script>
