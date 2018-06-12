@@ -39,12 +39,10 @@
 				<foreach name="news" item="vo">
 
 					<tr>
-						<td>{$val.id}</td>
-						<td width="100">
-							<empty name="$vo[0]">
-								{$vo[0].title}
-							</empty>
-						</td>
+						<empty name="$vo[0]">
+						<td>{$vo[0].nid}</td>
+						<td width="100">{$vo[0].title}</td>
+						</empty>
 						<td width="500">
 							<foreach name="vo" item="val">
 								<php>$filename = "'".$val['file_name']."'";</php>
@@ -90,25 +88,6 @@
 		</form>
 	</div>
 
-
-	<table border="1"style="display: none;" cellpadding="1" cellspacing="1" width="450px" height="180px">
-		<tr>
-			<td rowspan="2">1</td>
-			<td>1</td>
-			<td>1</td>
-		</tr>
-		<tr>
-
-			<td colspan="2">2</td>
-			<td>2</td>
-			<!--<td>2</td>-->
-		</tr>
-		<tr>
-			<td>3</td>
-			<td>3</td>
-			<td>3</td>
-		</tr>
-	</table>
 	<script src="__PUBLIC__/js/common.js"></script>
 	<script>
 		$(document).ready(function() {
