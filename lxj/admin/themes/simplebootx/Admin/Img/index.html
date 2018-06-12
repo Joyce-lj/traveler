@@ -37,23 +37,29 @@
 				</thead>
 				<tbody>
 				<foreach name="news" item="vo">
-					<foreach name="vo" item="val">
+
 					<tr>
-						<td>{$val.id}</td>
-						<td width="100">{$val.title}</td>
+						<empty name="$vo[0]">
+							<td>{$vo[0].id}</td>
+							<td width="100">{$vo[0].title}</td>
+						</empty>
+
 						<td width="500">
+							<foreach name="vo" item="val">
 								<php>$filename = "'".$val['img_name']."'";</php>
 								<php>$savename = "'".$val['save_name']."'";</php>
 								<php>$filepath = "'".$val['img_path']."'";</php>
 							   <!--<a href="javascript:void (0)" onclick="downloads({$filename},{$savename},{$filepath})">下载</a><hr/>-->
 								<php>$uploaddir =$downloadDir.$val['img_path'].$val['save_name'];</php>
 							<if condition=" $val.img_name  != '' ">
+								<p>
 								<i class="fa fa-file"></i>
 								{$val.img_name}&nbsp;&nbsp;|&nbsp;&nbsp;
 								<a href="{$uploaddir}"download="{$file}" >下载</a>
 								<!--<hr/>-->
+								</p>
 							</if>
-
+							</foreach>
 						</td>
 
 						<td>{$val.created_at|date="Y-m-d H:i:s",###}</td>
@@ -63,7 +69,7 @@
 							<a href="{:U('img/edit',array('nid'=>$val['nid']))}" >编辑</a>
 						</td>
 					</tr>
-					</foreach>
+
 				</foreach>
 				</tbody>
 				<tfoot>
