@@ -20,7 +20,7 @@ class ImgsortController extends AdminbaseController {
     // 后台图片分类列表
     public function index() {
         //分页
-        $count=$this->imgsort_model->count();
+        $count=$this->imgsort_model->where(array('state'=> 1))->count();
         $page = $this->page($count, 5);
         $this->imgsort_model->where(array('state'=> 1))->limit($page->firstRow , $page->listRows);
         $imgsort = $this->imgsort_model->select();

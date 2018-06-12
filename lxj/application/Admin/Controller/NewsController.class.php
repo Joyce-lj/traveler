@@ -78,6 +78,11 @@ class NewsController extends AdminbaseController {
                 'code'=> -1,
                 'status'=> 0,
             );
+            //将错误信息写入到.TXT文件中
+            $failinfos = $_FILES['file']['name'].'------'.$failReason.'------'.date('Y-m-d H:i:s',time());
+            $filepath = 'D:\/wamp\/'.__ROOT__.'/uploads/log/filefail.txt';
+            chmod($filepath,0644);
+            file_put_contents($filepath, $failinfos.PHP_EOL, FILE_APPEND);
             $this->error($msg);
         }else{// 上传成功
             $attachment['file_name'] = $info['file']['name'];

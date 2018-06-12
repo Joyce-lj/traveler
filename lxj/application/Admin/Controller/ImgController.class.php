@@ -72,11 +72,15 @@ class ImgController extends AdminbaseController {
         if(!$info) {// 上传错误提示错误信息
             $failReason = $upload->getError();
             $msg = array(
-//                'filename'=> $file['name'],
                 'message'=> $failReason,
                 'code'=> -1,
                 'status'=> 0,
             );
+            //将错误信息写入到.TXT文件中
+            $failinfos = $_FILES['file']['name'].'------'.$failReason.'------'.date('Y-m-d H:i:s',time());
+            $filepath = 'D:\/wamp\/'.__ROOT__.'/uploads/log/imagefail.txt';
+            chmod($filepath,0644);
+            file_put_contents($filepath, $failinfos.PHP_EOL, FILE_APPEND);
             $this->error($msg);
         }else{// 上传成功
             $attachment['img_name'] = $info['file']['name'];
@@ -272,11 +276,6 @@ class ImgController extends AdminbaseController {
                 foreach($aids as $id => $v){
                     $updata['nid'] = $nid;
                     $upres = $this->images_model->where(array('id'=>$v))->save($updata);
-                    if($upres){
-                        $this->success('更新成功',U('img/index'));
-                    }else{
-                        $this->error('更新失败!');
-                    }
                 }
             }
             $this->success('更新成功!',U('img/index'));
